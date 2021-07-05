@@ -1,0 +1,29 @@
+svg {
+  width: 100%;
+  background-color: #f8f8f8;
+  path,
+  circle {
+    fill: none;
+    stroke: #ccc;
+  }
+  .kite,
+  .dart {
+    .circle-1 {
+      stroke: #f15152;
+    }
+    .circle-2 {
+      stroke: #549250;
+    }
+    .circle-3 {
+      stroke: #fd06ff;
+    }
+    .circle-4 {
+      stroke: #7884ee;
+    }
+  }
+}
+
+// Pink
+// #fd06ff
+// Blue
+// #7884ee
