@@ -15,7 +15,8 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": false,
-    "target": "es6"
+    "target": "es6",
+    "types": ["node", "mocha", "chai"]
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }
