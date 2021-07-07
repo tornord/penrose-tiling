@@ -18,5 +18,5 @@
     "target": "es6",
     "types": ["node", "mocha", "chai"]
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "src/typings"]
 }

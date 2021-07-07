@@ -1,8 +1,9 @@
-import React from "react";
-import "./App.scss";
+import React, { useState, useRef } from "react";
+import { ReactSVGPanZoom, TOOL_AUTO, INITIAL_VALUE } from "react-svg-pan-zoom";
 
 import { TileType, Point } from "./Vertex";
 import { basicShapes } from "./legalVertices";
+import "./App.scss";
 
 const { cos, sin, PI, pow, sign, abs, sqrt } = Math;
 const sqr = (x: number) => x * x;
@@ -91,6 +92,9 @@ function Tile({ type, corner, angle, sideLength }: TileProps) {
 }
 
 function App() {
+  const viewer = useRef(null);
+  const [value, setValue] = useState(INITIAL_VALUE);
+
   const sideLength = 25;
   const coords: Point[] = [
     { x: 60, y: 35 },
@@ -112,6 +116,49 @@ function App() {
           </g>
         ))}
       </svg>
+      <ReactSVGPanZoom
+        ref={viewer}
+        className="penrose"
+        width={640}
+        height={480}
+        tool={TOOL_AUTO}
+        value={value}
+        onChangeValue={setValue}
+        // onZoom={(e) => { console.log('zoom', e); }}
+        // onPan={(e) => { console.log('pan', e); }}
+        onChangeTool={(d: any) => console.log('onChangeTool', d)}
+        // onClick={(e) => {
+        //   console.log('click', e.x, e.y);
+        //   console.log(
+        //     `boundingRect: { x: ${Math.round(Math.min(e.x, prevClick.x))}, y: ${Math.round(
+        //       Math.min(e.y, prevClick.y)
+        //     )}` +
+        //       `, width: ${Math.round(Math.abs(e.x - prevClick.x))}, height: ${Math.round(
+        //         Math.abs(e.y - prevClick.y)
+        //       )} }`
+        //   );
+        //   prevClick.x = e.x;
+        //   prevClick.y = e.y;
+        // }}
+        scaleFactor={1.1}
+        scaleFactorMin={0.5}
+        scaleFactorMax={20}
+        scaleFactorOnWheel={1.1}
+        toolbarProps={{ position: "none" }}
+        miniatureProps={{ position: "none" }}
+        detectAutoPan={false}
+        background={"#fff"}
+      >
+        <svg width={240} height={135}>
+          {basicShapes.map((d, i) => (
+            <g className={d.name.toLowerCase()} transform={`translate(${coords[i].x},${coords[i].y})`}>
+              {d.tiles.map((e: any) => (
+                <Tile type={e[0]} corner={e[1]} angle={e[2]} sideLength={sideLength} />
+              ))}
+            </g>
+          ))}
+        </svg>
+      </ReactSVGPanZoom>
     </>
   );
 }
