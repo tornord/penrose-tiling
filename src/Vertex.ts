@@ -1,6 +1,8 @@
 // http://fpmrt.riken.jp/public_html/sakai/penrose.html
 
-import {sinDeg, cosDeg, twodec, cos72, sin72, goldenRatio} from "./Math"
+import { sinDeg, cosDeg, twodec, cos72, sin72, goldenRatio } from "./Math";
+
+const { hypot } = Math;
 
 export enum TileType {
   Kite = "Kite",
@@ -225,5 +227,20 @@ export class Tiling {
         v.tiles.push(new VertexTile(vertexTilePosition(tile.type, Number(i), tile.angle), tile.type, Number(i)));
       }
     }
+  }
+
+  closestVertex(x: number, y: number) {
+    let mv = null;
+    let md = 0;
+    const vs = Object.values(this.vertices);
+    for (let i = 0; i < vs.length; i++) {
+      const v = vs[i];
+      const d = hypot(x - v.x, y - v.y);
+      if (mv === null || d < md) {
+        mv = v;
+        md = d;
+      }
+    }
+    return mv;
   }
 }
