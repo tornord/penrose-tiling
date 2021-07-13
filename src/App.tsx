@@ -1,25 +1,17 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ReactSVGPanZoom, TOOL_AUTO, INITIAL_VALUE } from "react-svg-pan-zoom";
 import { calcBasicShapes } from "./basicShapes";
-import { calcLegalVertices } from "./legalVertices";
+import { calcLegalVertices, calcLegalVerticesByName } from "./legalVertices";
 
-import { TileType, Point, Tiling, Tile } from "./Vertex";
+import { TileType, Point, Tiling, Tile, toVertexType, vertexTileWidth, Vertex, VertexTile } from "./Vertex";
 import "./App.scss";
-import { atan2Deg, goldenRatio, cos36, cos72, sin36 } from "./Math";
+import { atan2Deg, goldenRatio, cos36, cos72, sin36, twodec, cosDeg, sinDeg } from "./Math";
 
-const { cos, sin, PI, pow, sign, abs } = Math;
-
-function round(x: number, decimals: number) {
-  var p = pow(10, decimals);
-  return (sign(x) * Math.round(p * abs(x) + 0.01 / p)) / p;
-}
-
-const twodec = (x: number) => round(x, 2);
-
-const line = (s: number, v: number) => `l${twodec(s * cos((v / 180) * PI))},${twodec(s * sin((v / 180) * PI))}`;
+const line = (s: number, v: number) => `l${twodec(s * cosDeg(v))},${twodec(s * sinDeg(v))}`;
 
 const basicShapes = calcBasicShapes();
 const legalVertices = calcLegalVertices();
+const legalVerticesByName = calcLegalVerticesByName(legalVertices);
 
 interface TileProps {
   type: TileType;
@@ -77,7 +69,14 @@ function ReactTile({ type, corner, angle, sideLength }: TileProps) {
   );
 }
 
+const startTiles = basicShapes
+  .find((d) => d.name === "King")
+  .tiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+
 function App() {
+  const [currentTile, setCurrentTile] = useState({ type: TileType.Kite, corner: 0 });
+  const [closestPosition, setClosestPosition] = useState(null);
+  const [tiles, setTiles] = useState(startTiles);
   const viewer = useRef(null);
   const [value, setValue] = useState(INITIAL_VALUE);
 
@@ -91,45 +90,122 @@ function App() {
     { x: 150, y: 100 },
     { x: 210, y: 100 },
   ];
-  const { tiles: jackTiles } = basicShapes.find((d) => d.name === "Jack");
   const size = 40;
-  const jack = new Tiling(
-    jackTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
-  );
-  jack.build();
+  const tiling = new Tiling(tiles);
+  useEffect(() => {
+    window.onkeydown = (ev: KeyboardEvent): any => {
+      if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+        ev.preventDefault();
+        const v0 = (currentTile.type === TileType.Kite ? 0 : 4) + currentTile.corner;
+        const v1 = (8 + v0 + (ev.key === "ArrowUp" ? 1 : -1)) % 8;
+        setCurrentTile({ type: v1 <= 3 ? TileType.Kite : TileType.Dart, corner: v1 % 4 });
+      }
+    };
+  }, [currentTile.type, currentTile.corner]);
+  const vertexType = toVertexType(currentTile.type, currentTile.corner);
+  const width = vertexTileWidth(currentTile.type, currentTile.corner);
+  // let vs = Object.values(jack.vertices).filter((d) => d.tileWidthSum() < 20 && d.calcType() === vertexType);
+  // const res: string[] = [];
+  // vs.forEach((v) => {
+  //   const ps = v.possiblePositions(width);
+  //   ps.forEach((p) => {
+  //     const vn = new Vertex(v.x, v.y);
+  //     vn.tiles = v.tiles.slice(0);
+  //     const ca = v.vertexTileCoordinateAndAngle(currentTile.type, currentTile.corner, p);
+  //     const tile = new Tile(ca.coordinate.x, ca.coordinate.y, currentTile.type, ca.angle);
+  //     vn.tiles.push(new VertexTile(p, currentTile.type, currentTile.corner, tile));
+  //     vn.sortTiles();
+  //     const name = vn.tilesCanonicalString();
+  //     const lv = legalVerticesByName[name];
+  //     if (lv) {
+  //       res.push(`${vn.calcId()}: ${name}, ${p}`);
+  //     }
+  //   });
+  // });
+  let newTile: Tile = null;
+  const possiblePositions: number[] = [];
+  if (closestPosition) {
+    const v = tiling.vertices[closestPosition.id];
+    if (v && v.calcType() === vertexType) {
+      v.possiblePositions(width).forEach((p) => {
+        const vn = new Vertex(v.x, v.y);
+        vn.tiles = v.tiles.slice(0);
+        const ca = v.vertexTileCoordinateAndAngle(currentTile.type, currentTile.corner, p);
+        const tile = new Tile(ca.coordinate.x, ca.coordinate.y, currentTile.type, ca.angle);
+        vn.tiles.push(new VertexTile(p, currentTile.type, currentTile.corner, tile));
+        vn.sortTiles();
+        const name = vn.tilesCanonicalString();
+        const lv = legalVerticesByName[name];
+        if (lv) {
+          possiblePositions.push(p);
+          if (closestPosition.position === p) {
+            newTile = new Tile(ca.coordinate.x, ca.coordinate.y, currentTile.type, ca.angle);
+            const testTiling = new Tiling([...tiles, newTile]);
+            if (!testTiling.isLegal()) {
+              newTile = null;
+            }
+          }
+        }
+      });
+    }
+  }
+  console.log(currentTile, closestPosition, possiblePositions, newTile, tiles.length);
+  // console.log(res.join("\n"));
   return (
     <>
       <svg className="penrose" viewBox={`0 0 240 135`}>
-        <g className={"tiling"} transform={"translate(120, 67.5)"}>
-          {jackTiles.map((e: any, j: number) => (
-            <ReactTile key={j} type={e[0]} corner={e[1]} angle={e[2]} sideLength={size} />
-          ))}
-        </g>
+        {tiles.map((e: Tile, j: number) => (
+          <g className={"tiling"} transform={`translate(${120 + size * e.x}, ${67.5 + size * e.y})`}>
+            <ReactTile key={j} type={e.type} corner={0} angle={e.angle} sideLength={size} />
+          </g>
+        ))}
+        {newTile ? (
+          <g
+            className={"tiling"}
+            transform={`translate(${120 + size * closestPosition.x}, ${67.5 + size * closestPosition.y})`}
+          >
+            <ReactTile type={currentTile.type} corner={currentTile.corner} angle={newTile.angle} sideLength={size} />
+          </g>
+        ) : null}
         <rect
           className="interaction-layer"
           x={0}
           y={0}
           width={240}
           height={135}
+          onClick={(event: any) => {
+            if (newTile) {
+              const ts = tiles.slice();
+              ts.push(newTile);
+              setTiles(ts);
+            }
+          }}
           onMouseMove={(event: any) => {
             const dim = event.target.getBoundingClientRect();
             const svgX = (event.clientX - dim.left) / dim.width;
             const svgY = (event.clientY - dim.top) / dim.height;
             const x = ((svgX - 0.5) * 240) / size;
             const y = ((svgY - 0.5) * 135) / size;
-            const v = jack.closestVertex(x, y);
-            const t = v?.tilesCanonicalString() || "";
-            const legalVertice = legalVertices.find((d) => d.name === t);
-            const position = (20 + Math.round((20 * atan2Deg(y - v.y, x - v.x)) / 360)) % 20;
-            console.log(
-              round(x, 2),
-              round(y, 2),
-              v,
-              position,
-              v?.tilesCanonicalString(),
-              legalVertice?.possibleTiles.join(",") || "",
-              (legalVertice?.possibleShapes?.length || 0) === 1 ? legalVertice.possibleShapes[0] : ""
-            );
+            const v = tiling.closestVertex(x, y);
+            if (v) {
+              const position = (20 + Math.round((20 * atan2Deg(y - v.y, x - v.x)) / 360)) % 20;
+              const id = v.calcId();
+              if (!closestPosition || closestPosition.id !== id || closestPosition.position !== position) {
+                setClosestPosition({ id, x: v.x, y: v.y, position });
+              }
+            }
+            // const t = v?.tilesCanonicalString() || "";
+            // const legalVertice = legalVertices.find((d) => d.name === t);
+            // const position = (20 + Math.round((20 * atan2Deg(y - v.y, x - v.x)) / 360)) % 20;
+            // console.log(
+            //   round(x, 2),
+            //   round(y, 2),
+            //   v,
+            //   position,
+            //   v?.tilesCanonicalString(),
+            //   legalVertice?.possibleTiles.join(",") || "",
+            //   (legalVertice?.possibleShapes?.length || 0) === 1 ? legalVertice.possibleShapes[0] : ""
+            // );
           }}
         />
       </svg>

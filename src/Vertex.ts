@@ -50,6 +50,10 @@ export class Vertex {
   tiles: VertexTile[];
   static legalVerticesByName: LegalVertciesByName;
 
+  calcId() {
+    return coordinateToId({ x: this.x, y: this.y });
+  }
+
   tileWidthSum() {
     return this.tiles.reduce((p, c) => p + c.width, 0);
   }
@@ -180,6 +184,10 @@ export class Vertex {
     const c = cs[corner];
     return { coordinate: { x: this.x - c.x, y: this.y - c.y }, angle };
   }
+
+  sortTiles() {
+    this.tiles.sort((d1, d2) => d1.position - d2.position);
+  }
 }
 
 export class Tile {
@@ -238,7 +246,7 @@ export class Tiling {
     const vs = Object.values(this.vertices);
     for (let i = 0; i < vs.length; i++) {
       const v = vs[i];
-      v.tiles.sort((d1, d2) => d1.position - d2.position);
+      v.sortTiles();
     }
   }
 

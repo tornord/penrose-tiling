@@ -52,7 +52,6 @@ describe("Vertex", () => {
       const t = new Tiling(
         tiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
       );
-      t.build();
       expect(t.vertices["0,0"].tileWidthSum()).to.equal(20);
     });
   });
@@ -69,7 +68,6 @@ describe("Vertex", () => {
         [TileType.Dart, 0, 72],
       ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
     );
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.tiles.map((d, i) => v.gapBetween(i, (i + 1) % v.tiles.length)).join(" ")).to.equal("0 12");
   });
@@ -81,7 +79,6 @@ describe("Vertex", () => {
         const t = new Tiling(
           [tile].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
         );
-        t.build();
         const v = t.vertices["0,0"];
         expect(v.gapBetween(0, 0)).to.equal(expecteds[j]);
       });
@@ -93,7 +90,6 @@ describe("Vertex", () => {
         [TileType.Dart, 0, 18],
       ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
     );
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.tiles.map((d, i) => v.gapBetween(i, (i + 1) % v.tiles.length)).join(" ")).to.equal("-3 15");
   });
@@ -103,7 +99,6 @@ describe("Vertex", () => {
       const t = new Tiling(
         jackTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
       );
-      t.build();
       const v = t.vertices["0,0"];
       expect(v.tilesToString(i)).to.equal(expecteds[i]);
     }
@@ -114,7 +109,6 @@ describe("Vertex", () => {
       const t = new Tiling(
         basicShapes[i].tiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
       );
-      t.build();
       const v = t.vertices["0,0"];
       expect(v.tilesCanonicalString()).to.equal(expecteds[i]);
     }
@@ -141,7 +135,6 @@ describe("Vertex", () => {
         const t = new Tiling(
           ts.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
         );
-        t.build();
         v = t.vertices["0,0"];
       }
       expect(v.tilesCanonicalString()).to.equal(expecteds[i]);
@@ -157,7 +150,6 @@ describe("Vertex", () => {
       [TileType.Kite, 0, 54],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.isLegal()).to.equal(false);
     // const g = v.gapBetween(0, 1);
@@ -170,7 +162,6 @@ describe("Vertex", () => {
       [TileType.Kite, 1, 72],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.isLegal()).to.equal(false);
   });
@@ -181,14 +172,12 @@ describe("Vertex", () => {
       [TileType.Kite, 3, 72],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.isLegal()).to.equal(false);
   });
   it("isLegal legalVertices", () => {
     const tiles = sunTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     expect(
       Object.values(t.vertices)
         .map((d) => d.isLegal())
@@ -202,7 +191,6 @@ describe("Vertex", () => {
       [TileType.Kite, 0, 72],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.possiblePositions(4)).to.deep.equal([8, 10, 12, 14, 16]);
   });
@@ -212,7 +200,6 @@ describe("Vertex", () => {
       [TileType.Kite, 0, 144],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.possiblePositions(4)).to.deep.equal([4, 12, 14, 16]);
   });
@@ -222,7 +209,6 @@ describe("Vertex", () => {
       [TileType.Dart, 1, 90],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.possiblePositions(4)).to.deep.equal([15, 17, 19, 1]);
   });
@@ -233,7 +219,6 @@ describe("Vertex", () => {
       [TileType.Dart, 3, 18],
     ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.possiblePositions(2)).to.deep.equal([13]);
   });
@@ -245,7 +230,6 @@ describe("Vertex", () => {
     ];
     const tiles = aceTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const vs = Object.values(t.vertices);
     const vt = toVertexType(TileType.Kite, 2);
     let ei = 0;
@@ -259,7 +243,6 @@ describe("Vertex", () => {
   it("vertexTileCoordinateAndAngle jackTiles", () => {
     const tiles = jackTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const vs = Object.values(t.vertices);
     for (let j = 0; j < vs.length; j++) {
       const v = vs[j];
@@ -281,7 +264,6 @@ describe("Vertex", () => {
           .filter((_, i) => i !== omitIndex)
           .map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
         const t = new Tiling(tiles);
-        t.build();
         const v = t.vertices["0,0"];
         const [type, corner, angle] = ts[omitIndex];
         const width = vertexTileWidth(type, corner);
@@ -320,7 +302,6 @@ describe("Tiling", () => {
   it("build ace", () => {
     const tiles = aceTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     let s = Object.entries(t.vertices).map(
       (d) =>
         `${round(d[1].x, 2)},${round(d[1].y, 2)}: ${d[1].tiles
@@ -340,7 +321,6 @@ describe("Tiling", () => {
   it("build sun", () => {
     const tiles = sunTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const ts: string[] = [];
     Object.values(t.vertices).forEach((d) => {
       const v = legalVertices.find((e) => e.name === d.tilesCanonicalString());
@@ -357,7 +337,6 @@ describe("Tiling", () => {
       .map((d) => jackTiles[d])
       .map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     const v = t.vertices["0,0"];
     expect(v.tiles.map((d) => d.position)).to.deep.equal([1, 5, 9, 11, 19]);
   });
@@ -392,7 +371,6 @@ describe("Tiling", () => {
       const t = new Tiling(
         tiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
       );
-      t.build();
       const v = t.vertices["0,0"];
       expect(v.tiles.map((d, i) => v.gapBetween(i, (i + 1) % v.tiles.length)).join("")).to.equal(
         "0".repeat(v.tiles.length)
@@ -409,7 +387,6 @@ describe("Tiling", () => {
       const t = new Tiling(
         ts.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number))
       );
-      t.build();
       const v = t.vertices["0,0"];
       expect(v.tiles.map((d, i) => v.gapBetween(i, (i + 1) % v.tiles.length)).join("")).to.equal(expecteds[j]);
     });
@@ -418,7 +395,6 @@ describe("Tiling", () => {
   it("isLegal", () => {
     const tiles = jackTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
-    t.build();
     expect(t.isLegal()).to.equal(true);
   });
 });
