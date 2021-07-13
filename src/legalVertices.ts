@@ -1,56 +1,7 @@
-import { VertexType, TileType, Vertex, Tiling, Tile } from "./Vertex";
+import { calcBasicShapes } from "./basicShapes";
+import { Vertex, Tiling, Tile, TileType, VertexType } from "./Vertex";
 
-type TileAsArray = [TileType, number, number];
-
-const sunTiles: TileAsArray[] = [...Array(5)].map((d, i) => [TileType.Kite, 0, 18 + 72 * i]);
-const starTiles: TileAsArray[] = [...Array(5)].map((d, i) => [TileType.Dart, 0, 18 + 72 * i]);
-const aceTiles: TileAsArray[] = [
-  [TileType.Kite, 1, -90],
-  [TileType.Kite, 3, -90 - 72],
-  [TileType.Dart, 2, 54],
-];
-const deuceTiles: TileAsArray[] = [
-  [TileType.Kite, 2, 72 + 90],
-  [TileType.Kite, 2, -54],
-  [TileType.Dart, 1, 90],
-  [TileType.Dart, 3, 18],
-];
-const jackTiles: TileAsArray[] = [
-  [TileType.Kite, 0, 18],
-  [TileType.Kite, 0, 90],
-  [TileType.Dart, 3, -90],
-  [TileType.Kite, 2, 54],
-  [TileType.Dart, 1, -90 - 72],
-];
-const queenTiles: TileAsArray[] = [
-  [TileType.Kite, 1, -90],
-  [TileType.Kite, 3, -162],
-  [TileType.Kite, 1, 54],
-  [TileType.Dart, 0, -126],
-  [TileType.Kite, 3, 54],
-];
-const kingTiles: TileAsArray[] = [
-  [TileType.Kite, 1, -18],
-  [TileType.Dart, 0, 180 - 18],
-  [TileType.Dart, 0, -90 - 36],
-  [TileType.Dart, 0, -54],
-  [TileType.Kite, 3, 90 + 36],
-];
-
-class BasicShape {
-  constructor(name: string, tiles: TileAsArray[]) {
-    this.name = name;
-    this.tiles = tiles;
-  }
-  name: string;
-  tiles: TileAsArray[];
-}
-
-const basicShapeNames = ["Sun", "Star", "Ace", "Jack", "Deuce", "Queen", "King"];
-const basicShapeTiles = [sunTiles, starTiles, aceTiles, jackTiles, deuceTiles, queenTiles, kingTiles];
-export const basicShapes = basicShapeNames.map((d, i) => new BasicShape(d, basicShapeTiles[i]));
-
-class LegalVertex {
+export class LegalVertex {
   constructor(name: string, type: VertexType, numberOfTiles: number) {
     this.name = name;
     this.type = type;
@@ -65,7 +16,10 @@ class LegalVertex {
   numberOfTiles: number;
 }
 
-function calcLegalVertices() {
+export type LegalVertciesByName = { [name: string]: LegalVertex };
+
+export function calcLegalVertices() {
+  const basicShapes = calcBasicShapes();
   const legalVertexDict: { [name: string]: LegalVertex } = {};
   for (let j = 0; j < basicShapes.length; j++) {
     const { tiles, name } = basicShapes[j];
@@ -123,4 +77,11 @@ function calcLegalVertices() {
   return legalVertices;
 }
 
-export const legalVertices = calcLegalVertices();
+// export const legalVertices = calcLegalVertices();
+
+export function calcLegalVerticesByName(legalVertices: LegalVertex[]): LegalVertciesByName {
+  return legalVertices.reduce((p, c) => {
+  p[c.name] = c;
+  return p;
+}, {} as LegalVertciesByName);
+};

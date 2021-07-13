@@ -1,5 +1,11 @@
+import { expect } from "chai";
+
 import { VertexType } from "../src/Vertex";
-import { basicShapes, legalVertices } from "../src/legalVertices";
+import { calcLegalVertices } from "../src/legalVertices";
+import { calcBasicShapes } from "../src/basicShapes";
+
+const legalVertices = calcLegalVertices();
+const basicShapes = calcBasicShapes();
 
 describe("legalVertices", () => {
   it("one empty", () => {

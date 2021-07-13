@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 import { ReactSVGPanZoom, TOOL_AUTO, INITIAL_VALUE } from "react-svg-pan-zoom";
+import { calcBasicShapes } from "./basicShapes";
+import { calcLegalVertices } from "./legalVertices";
 
 import { TileType, Point, Tiling, Tile } from "./Vertex";
-import { basicShapes, legalVertices } from "./legalVertices";
 import "./App.scss";
-import { atan2Deg } from "./Math";
+import { atan2Deg, goldenRatio, cos36, cos72, sin36 } from "./Math";
 
-const { cos, sin, PI, pow, sign, abs, sqrt } = Math;
-const sqr = (x: number) => x * x;
+const { cos, sin, PI, pow, sign, abs } = Math;
 
 function round(x: number, decimals: number) {
   var p = pow(10, decimals);
@@ -18,10 +18,8 @@ const twodec = (x: number) => round(x, 2);
 
 const line = (s: number, v: number) => `l${twodec(s * cos((v / 180) * PI))},${twodec(s * sin((v / 180) * PI))}`;
 
-const goldenRatio = (sqrt(5) + 1) / 2;
-const cos36 = goldenRatio / 2;
-const cos72 = (goldenRatio - 1) / 2;
-const sin36 = sqrt(1 - sqr(cos36));
+const basicShapes = calcBasicShapes();
+const legalVertices = calcLegalVertices();
 
 interface TileProps {
   type: TileType;
@@ -122,7 +120,7 @@ function App() {
             const v = jack.closestVertex(x, y);
             const t = v?.tilesCanonicalString() || "";
             const legalVertice = legalVertices.find((d) => d.name === t);
-            const position = (20 + Math.round((20 * atan2Deg(x - v.x, y - v.y)) / 360)) % 20;
+            const position = (20 + Math.round((20 * atan2Deg(y - v.y, x - v.x)) / 360)) % 20;
             console.log(
               round(x, 2),
               round(y, 2),

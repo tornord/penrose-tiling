@@ -1,6 +1,7 @@
+import { expect } from "chai";
+
 import {
   VertexTile,
-  TileType,
   Vertex,
   VertexType,
   Tile,
@@ -9,11 +10,14 @@ import {
   toVertexType,
   vertexTileWidth,
   vertexTilePosition,
+  TileType,
 } from "../src/Vertex";
 import { round, cos36, cos72, sin36, sin72 } from "../src/Math";
-import { basicShapes, legalVertices } from "../src/legalVertices";
+import { calcBasicShapes } from "../src/basicShapes";
+import { calcLegalVertices } from "../src/legalVertices";
 
-const { sqrt } = Math;
+const legalVertices = calcLegalVertices();
+const basicShapes = calcBasicShapes();
 
 const { tiles: sunTiles } = basicShapes.find((d) => d.name === "Sun");
 const { tiles: starTiles } = basicShapes.find((d) => d.name === "Star");
@@ -143,6 +147,151 @@ describe("Vertex", () => {
       expect(v.tilesCanonicalString()).to.equal(expecteds[i]);
     }
   });
+  it("isLegal empty", () => {
+    const v = new Vertex(0, 0);
+    expect(v.isLegal()).to.equal(true);
+  });
+  it("isLegal overlap", () => {
+    const tiles = [
+      [TileType.Kite, 0, 0],
+      [TileType.Kite, 0, 54],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.isLegal()).to.equal(false);
+    // const g = v.gapBetween(0, 1);
+    // console.log(g);
+    // console.log(t.vertices["0,0"].tilesCanonicalString());
+  });
+  it("isLegal mixed types", () => {
+    const tiles = [
+      [TileType.Kite, 0, 0],
+      [TileType.Kite, 1, 72],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.isLegal()).to.equal(false);
+  });
+  it("isLegal illegal vertices", () => {
+    // K3 next to a K3 is illegal
+    const tiles = [
+      [TileType.Kite, 3, 0],
+      [TileType.Kite, 3, 72],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.isLegal()).to.equal(false);
+  });
+  it("isLegal legalVertices", () => {
+    const tiles = sunTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    expect(
+      Object.values(t.vertices)
+        .map((d) => d.isLegal())
+        .every((d) => d === true)
+    ).to.equal(true);
+    // console.log(ss)
+  });
+  it("possiblePositions K0K0G12", () => {
+    const tiles = [
+      [TileType.Kite, 0, 0],
+      [TileType.Kite, 0, 72],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.possiblePositions(4)).to.deep.equal([8, 10, 12, 14, 16]);
+  });
+  it("possiblePositions K0G4K0G8", () => {
+    const tiles = [
+      [TileType.Kite, 0, 0],
+      [TileType.Kite, 0, 144],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.possiblePositions(4)).to.deep.equal([4, 12, 14, 16]);
+  });
+  it("possiblePositions K2D1G10", () => {
+    const tiles = [
+      [TileType.Kite, 2, -54],
+      [TileType.Dart, 1, 90],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.possiblePositions(4)).to.deep.equal([15, 17, 19, 1]);
+  });
+  it("possiblePositions K2K2G2D3", () => {
+    const tiles = [
+      [TileType.Kite, 2, 72 + 90],
+      [TileType.Kite, 2, -54],
+      [TileType.Dart, 3, 18],
+    ].map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.possiblePositions(2)).to.deep.equal([13]);
+  });
+  it("possiblePositions ace", () => {
+    const expecteds = [
+      [19, 1, 3],
+      [13, 15],
+      [7, 9],
+    ];
+    const tiles = aceTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const vs = Object.values(t.vertices);
+    const vt = toVertexType(TileType.Kite, 2);
+    let ei = 0;
+    for (let i = 0; i < vs.length; i++) {
+      const v = vs[i];
+      if (v.calcType() === vt) {
+        expect(v.possiblePositions(8)).to.deep.equal(expecteds[ei++]);
+      }
+    }
+  });
+  it("vertexTileCoordinateAndAngle jackTiles", () => {
+    const tiles = jackTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const vs = Object.values(t.vertices);
+    for (let j = 0; j < vs.length; j++) {
+      const v = vs[j];
+      for (let i = 0; i < v.tiles.length; i++) {
+        const vt = v.tiles[i];
+        const ca = v.vertexTileCoordinateAndAngle(vt.type, vt.corner, vt.position);
+        expect(ca.angle).to.almost.equal(vt.tile.angle);
+        expect(ca.coordinate.x).to.almost.equal(vt.tile.x);
+        expect(ca.coordinate.y).to.almost.equal(vt.tile.y);
+      }
+    }
+  });
+  it("vertexTileCoordinateAndAngle basicShapes omit one", () => {
+    for (let i = 0; i < basicShapes.length; i++) {
+      const b = basicShapes[i];
+      const ts = b.tiles;
+      for (let omitIndex = 0; omitIndex < ts.length; omitIndex++) {
+        const tiles = ts
+          .filter((_, i) => i !== omitIndex)
+          .map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+        const t = new Tiling(tiles);
+        t.build();
+        const v = t.vertices["0,0"];
+        const [type, corner, angle] = ts[omitIndex];
+        const width = vertexTileWidth(type, corner);
+        const ps = v.possiblePositions(width);
+        expect(ps.length).to.equal(1);
+        const ca = v.vertexTileCoordinateAndAngle(type, corner, ps[0]);
+        expect(ca.angle).to.almost.equal(angle);
+      }
+    }
+  });
 });
 
 describe("Tile", () => {
@@ -168,17 +317,6 @@ describe("Tile", () => {
 });
 
 describe("Tiling", () => {
-  it.skip("build sandbox", () => {
-    const tiles = [[TileType.Kite, 0, 0]].map((d) =>
-      Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number)
-    );
-    const t = new Tiling(tiles);
-    t.build();
-    const v = t.vertices["0,0"];
-    console.log(Object.values(t.vertices).map(d=>`${round(d.x, 2)},${round(d.y, 2)}`).join("\n"));
-  });
-  const testTiles = [[TileType.Dart, 0, -54]];
-
   it("build ace", () => {
     const tiles = aceTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
     const t = new Tiling(tiles);
@@ -190,7 +328,7 @@ describe("Tiling", () => {
           .join(",")}`
     );
     expect(s.join("\n")).to.equal(
-      "0,1: K0,K0\n0,0: K1,K3,D2\n0.59,0.19: K2,D1\n0.95,0.69: K3\n-0.95,0.69: K1\n-0.59,0.19: K2,D3\n0,-0.62: D0"
+      "0,1: K0,K0\n0,0: K1,K3,D2\n0.59,0.19: K2,D1\n0.95,0.69: K3\n-0.95,0.69: K1\n-0.59,0.19: D3,K2\n0,-0.62: D0"
     );
     s = Object.values(t.vertices).map((d) => `${d.calcType()}`);
     expect(s.join(" ")).to.equal("Tail Head Tail Head Head Tail Head");
@@ -212,6 +350,16 @@ describe("Tiling", () => {
       }
     });
     expect(ts).to.deep.equal(["Sun", "Ace Queen", "Jack Deuce"]);
+  });
+
+  it("build tile order", () => {
+    const tiles = [4, 3, 2, 1, 0]
+      .map((d) => jackTiles[d])
+      .map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    const v = t.vertices["0,0"];
+    expect(v.tiles.map((d) => d.position)).to.deep.equal([1, 5, 9, 11, 19]);
   });
 
   it("vertexTilePosition", () => {
@@ -254,7 +402,7 @@ describe("Tiling", () => {
 
   it("gapBetween basic shapes with gap", () => {
     // The basic shapes with tiles index 1 removed should have gaps
-    const expecteds = ["4000", "4000", "40", "4000", "800", "4000", "4000"];
+    const expecteds = ["4000", "4000", "40", "4000", "008", "4000", "0400"];
     basicShapes.forEach(({ tiles }, j) => {
       const ts = tiles.slice();
       ts.splice(1, 1);
@@ -265,5 +413,12 @@ describe("Tiling", () => {
       const v = t.vertices["0,0"];
       expect(v.tiles.map((d, i) => v.gapBetween(i, (i + 1) % v.tiles.length)).join("")).to.equal(expecteds[j]);
     });
+  });
+
+  it("isLegal", () => {
+    const tiles = jackTiles.map((d) => Tile.createFromVertex(0, 0, d[0] as TileType, d[1] as number, d[2] as number));
+    const t = new Tiling(tiles);
+    t.build();
+    expect(t.isLegal()).to.equal(true);
   });
 });

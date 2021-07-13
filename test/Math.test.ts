@@ -1,6 +1,8 @@
-import { sqr, round, sinDeg, cosDeg, twodec, cos36, cos72, sin36, sin72, goldenRatio } from "../src/Math";
+import { expect } from "chai";
 
-const { PI, sqrt } = Math;
+import { sqr, round, sinDeg, cosDeg, twodec, cos36, cos72, sin36, sin72, goldenRatio, atan2Deg } from "../src/Math";
+
+const { PI } = Math;
 
 describe("Math", () => {
   it("sqr", () => {
@@ -52,5 +54,16 @@ describe("Math", () => {
 
   it("sin72", () => {
     expect(sin72).to.almost.equal(0.9510565162951535);
+  });
+
+  it("atan2Deg", () => {
+    expect(atan2Deg(0, 1)).to.almost.equal(0);
+    expect(atan2Deg(1, 1)).to.almost.equal(45);
+    expect(atan2Deg(1, 0)).to.almost.equal(90);
+    expect(atan2Deg(1, -1)).to.almost.equal(135);
+    expect(atan2Deg(0, -1)).to.almost.equal(180);
+    expect(atan2Deg(-1, -1)).to.almost.equal(-135);
+    expect(atan2Deg(-1, 0)).to.almost.equal(-90);
+    expect(atan2Deg(-1, 1)).to.almost.equal(-45);
   });
 });

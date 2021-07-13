@@ -3,7 +3,6 @@ const { cos, sin, PI, pow, sign, abs, sqrt, atan2 } = Math;
 export const sqr = (x: number) => x * x;
 export const sinDeg = (x: number) => sin((x / 180) * PI);
 export const cosDeg = (x: number) => cos((x / 180) * PI);
-export const atan2Deg = (x: number, y: number) => atan2(y, x) * 180 / PI;
 
 export function round(x: number, decimals: number) {
   var p = pow(10, decimals);
@@ -17,3 +16,5 @@ export const cos36 = goldenRatio / 2;
 export const cos72 = (goldenRatio - 1) / 2;
 export const sin36 = sqrt(1 - sqr(cos36));
 export const sin72 = sqrt(1 - sqr(cos72));
+
+export const atan2Deg = (y: number, x: number) => (atan2(y, x) * 180) / PI;
